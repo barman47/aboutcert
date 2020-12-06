@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
         return res.status(406).json(errors);
     }
 
-    const { name, email, phone, password, gender, dateOfBirth } = req.body;
+    const { name, email, phone, gender, dateOfBirth } = req.body;
     try {
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
         }
 
         const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
+        const hash = await bcrypt.hash(req.body.password, salt);
 
         const user = new User({
             name: name.toUpperCase(),
@@ -37,7 +37,7 @@ router.post('/register', async (req, res) => {
         });
 
         const newUser = await user.save();
-        const { password, ...rest } = newUser;
+        const { password, ...rest } = newUser._doc;
 
         const payload = {...rest};
         const token = await jwt.sign(payload, secretOrKey, { expiresIn: '30 days' });
