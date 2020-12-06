@@ -16,9 +16,8 @@ router.post('/register', async (req, res) => {
         return res.status(406).json(errors);
     }
 
-    const { name, email, phone, password, gender, dateOfBirth } = req.body;
-
     try {
+        const { name, email, phone, password, gender, dateOfBirth } = req.body;
         const userExists = await User.findOne({ email });
         if (userExists) {
             errors.email = 'User already exists';
@@ -38,7 +37,11 @@ router.post('/register', async (req, res) => {
         });
 
         const newUser = await user.save();
-        return res.status(201).json({ msg: 'User created successfully', user: newUser });
+        const { password, ...rest } = newUser;
+
+        const payload = {...rest};
+        const token = await jwt.sign(payload, secretOrKey, { expiresIn: '30 days' });
+        return res.status(201).json({ msg: 'User created successfully', user: { ...rest }, token });
 
     } catch (err) {
         console.error(err);
@@ -81,7 +84,7 @@ router.post('/login', async (req, res) => {
         };
 
         const token = await jwt.sign(payload, secretOrKey, { expiresIn: '30 days' });
-        return res.status(202).json({ msg: 'User logged in', token: `Bearer ${token}` });
+        return res.status(202).json({ msg: 'User logged in', token });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ msg: 'Server error' });
