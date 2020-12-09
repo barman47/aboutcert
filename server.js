@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const passport = require('passport');
 
 const connectDB = require('./config/db');
@@ -9,6 +10,9 @@ const PORT = process.env.PORT || 5000;
 
 connectDB();
 const app = express();
+
+app.use(cors());
+app.options('*', cors());
 
 // Passport config
 require('./config/passport');
